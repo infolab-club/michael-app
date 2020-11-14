@@ -7,6 +7,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.view.Display;
 import android.view.View;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -23,7 +24,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
+        GoogleMap.OnMapClickListener {
     private GoogleMap map;
     private LatLng cityPosition = new LatLng(59.932821, 30.329003);
     private ArrayList<Event> events = new ArrayList<>();
@@ -58,14 +60,15 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void initMap() {
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(cityPosition, 12));
         map.setOnMarkerClickListener(this);
+        map.setOnMapClickListener(this);
     }
 
     private void setEvents() {
         events.add(new Event(0, 0, "1/1/19 0:08", "Центральный", 59.939523, 30.370717, 104577, 87878));
-        events.add(new Event(1, 0, "1/1/19 1:08", "Центральный", 59.925144, 30.357413, 104577, 87878));
-        events.add(new Event(2, 0, "1/1/19 0:58", "Центральный", 59.925704, 30.285435, 104577, 87878));
-        events.add(new Event(3, 0, "1/1/19 2:00", "Центральный", 59.924113, 30.282849, 104577, 87878));
-        events.add(new Event(4, 0, "1/1/19 4:37", "Центральный", 59.913009, 30.349078, 104577, 87878));
+        events.add(new Event(1, 1, "1/1/19 1:08", "Центральный", 59.925144, 30.357413, 104577, 87878));
+        events.add(new Event(2, 2, "1/1/19 0:58", "Центральный", 59.925704, 30.285435, 104577, 87878));
+        events.add(new Event(3, 3, "1/1/19 2:00", "Центральный", 59.924113, 30.282849, 104577, 87878));
+        events.add(new Event(4, 3, "1/1/19 4:37", "Центральный", 59.913009, 30.349078, 104577, 87878));
     }
 
     private void showEventsOnMap() {
@@ -102,7 +105,56 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         return false;
     }
 
-    private void updateInfoMarker(Marker marker) {
+    private Event getEventById(int id) {
+        for (Event event: events) {
+            if (event.id == id) {
+                return event;
+            }
+        }
+        return null;
+    }
 
+    private void updateInfoMarker(Marker marker) {
+        Event event = getEventById(Integer.parseInt(String.valueOf(marker.getTag())));
+
+        TextView textType, textDistrict, textTime, textDate, textAddress, textBuilding, textLat, textLon;
+        textType = findViewById(R.id.textType);
+        textDistrict = findViewById(R.id.textDistrict);
+        textTime = findViewById(R.id.textTime);
+        textDate = findViewById(R.id.textDate);
+        textAddress = findViewById(R.id.textAddress);
+        textBuilding = findViewById(R.id.textBuilding);
+        textLat = findViewById(R.id.textLat);
+        textLon = findViewById(R.id.textLon);
+
+        switch (event.type) {
+            case 0:
+                textType.setText("Слабый напор или отсутствие холодного водоснабжения");
+                break;
+            case 1:
+                textType.setText("Слабый напор или отсутствие горячего водоснабжения");
+                break;
+            case 2:
+                textType.setText("ДТП с пострадавшими людьми");
+                break;
+            case 3:
+                textType.setText("Пожары");
+                break;
+        }
+
+        textDistrict.setText(event.district);
+        textTime.setText(event.time.split(" ")[1]);
+        textDate.setText(event.time.split(" ")[0]);
+        textAddress.setText(String.valueOf(event.idAddress));
+        textBuilding.setText(String.valueOf(event.idBuilding));
+        textLat.setText(String.valueOf(event.lat));
+        textLon.setText(String.valueOf(event.lon));
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        if (info != null) {
+            info.setVisibility(View.GONE);
+        }
     }
 }
