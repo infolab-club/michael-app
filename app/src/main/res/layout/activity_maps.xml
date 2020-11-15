@@ -206,4 +206,53 @@
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
+
+    <ImageButton
+        android:id="@+id/buttonHotWater"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="20dp"
+        android:background="@android:color/transparent"
+        android:scaleType="centerCrop"
+        map:layout_constraintBottom_toBottomOf="parent"
+        map:layout_constraintEnd_toStartOf="@+id/buttonColdWater"
+        map:layout_constraintHorizontal_bias="0.5"
+        map:layout_constraintStart_toStartOf="parent"
+        map:srcCompat="@drawable/ic_button_hot_water" />
+
+    <ImageButton
+        android:id="@+id/buttonColdWater"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@android:color/transparent"
+        android:scaleType="centerCrop"
+        map:layout_constraintBottom_toBottomOf="@+id/buttonHotWater"
+        map:layout_constraintEnd_toStartOf="@+id/buttonCar"
+        map:layout_constraintHorizontal_bias="0.5"
+        map:layout_constraintStart_toEndOf="@+id/buttonHotWater"
+        map:srcCompat="@drawable/ic_button_cold_water" />
+
+    <ImageButton
+        android:id="@+id/buttonCar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@android:color/transparent"
+        android:scaleType="centerCrop"
+        map:layout_constraintBottom_toBottomOf="@+id/buttonColdWater"
+        map:layout_constraintEnd_toStartOf="@+id/buttonFire"
+        map:layout_constraintHorizontal_bias="0.5"
+        map:layout_constraintStart_toEndOf="@+id/buttonColdWater"
+        map:srcCompat="@drawable/ic_button_car" />
+
+    <ImageButton
+        android:id="@+id/buttonFire"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@android:color/transparent"
+        android:scaleType="centerCrop"
+        map:layout_constraintBottom_toBottomOf="@+id/buttonCar"
+        map:layout_constraintEnd_toEndOf="parent"
+        map:layout_constraintHorizontal_bias="0.5"
+        map:layout_constraintStart_toEndOf="@+id/buttonCar"
+        map:srcCompat="@drawable/ic_button_fire" />
 </androidx.constraintlayout.widget.ConstraintLayout>

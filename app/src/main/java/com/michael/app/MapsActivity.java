@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Display;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,6 +37,8 @@ public class MapsActivity extends AppCompatActivity
     private LatLng cityPosition = new LatLng(59.932821, 30.329003);
     private ArrayList<Event> events = new ArrayList<>();
     private CardView info;
+    private boolean isShowCold = true, isShowHot = true, isShowCar = true, isShowFire = true;
+    private ImageButton buttonCold, buttonHot, buttonCar, buttonFire;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +49,6 @@ public class MapsActivity extends AppCompatActivity
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
-        setEvents();
         info = findViewById(R.id.info);
         info.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -54,20 +56,86 @@ public class MapsActivity extends AppCompatActivity
                 info.setVisibility(View.GONE);
             }
         });
-        testWebClient();
+        getEventsFromServer();
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         this.map = googleMap;
         initMap();
+        initButtons();
         showEventsOnMap();
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        if (info != null) info.setVisibility(View.GONE);
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        updateInfoMarker(marker);
+        if (info.getVisibility() == View.GONE) {
+            info.setVisibility(View.VISIBLE);
+        }
+        return false;
     }
 
     private void initMap() {
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(cityPosition, 12));
         map.setOnMarkerClickListener(this);
         map.setOnMapClickListener(this);
+    }
+
+    private void initButtons() {
+        buttonCold = findViewById(R.id.buttonColdWater);
+        buttonHot = findViewById(R.id.buttonHotWater);
+        buttonCar = findViewById(R.id.buttonCar);
+        buttonFire = findViewById(R.id.buttonFire);
+        buttonHot.setOnClickListener(view -> {
+            if (view.getAlpha() == 1) {
+                isShowHot = false;
+                view.setAlpha(0.5f);
+            } else {
+                isShowHot = true;
+                view.setAlpha(1);
+            }
+            showEventsOnMap();
+            if (info != null) info.setVisibility(View.GONE);
+        });
+        buttonCold.setOnClickListener(view -> {
+            if (view.getAlpha() == 1) {
+                isShowCold = false;
+                view.setAlpha(0.5f);
+            } else {
+                isShowCold = true;
+                view.setAlpha(1);
+            }
+            showEventsOnMap();
+            if (info != null) info.setVisibility(View.GONE);
+        });
+        buttonCar.setOnClickListener(view -> {
+            if (view.getAlpha() == 1) {
+                isShowCar = false;
+                view.setAlpha(0.5f);
+            } else {
+                isShowCar = true;
+                view.setAlpha(1);
+            }
+            showEventsOnMap();
+            if (info != null) info.setVisibility(View.GONE);
+        });
+        buttonFire.setOnClickListener(view -> {
+            if (view.getAlpha() == 1) {
+                isShowFire = false;
+                view.setAlpha(0.5f);
+            } else {
+                isShowFire = true;
+                view.setAlpha(1);
+            }
+            showEventsOnMap();
+            if (info != null) info.setVisibility(View.GONE);
+        });
     }
 
     private void setEvents() {
@@ -80,6 +148,7 @@ public class MapsActivity extends AppCompatActivity
 
     private void showEventsOnMap() {
         map.clear();
+
         /* Получение ширины и высоты экрана. */
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -93,24 +162,20 @@ public class MapsActivity extends AppCompatActivity
         /* Установка размера иконки (ширина = высота). */
         int iconSize = (int) (coefficient * sumSize);
         /* Ресурс иконки маркера. */
-        BitmapDrawable bitmapDrawable = (BitmapDrawable) getResources().getDrawable(R.drawable.marker);
+        BitmapDrawable bitmapDrawable0 = (BitmapDrawable) getResources().getDrawable(R.drawable.marker_0);
+        BitmapDrawable bitmapDrawable1 = (BitmapDrawable) getResources().getDrawable(R.drawable.marker_1);
         /* Установка выбранного изображения. */
-        Bitmap icon = Bitmap.createScaledBitmap(bitmapDrawable.getBitmap(), iconSize, iconSize, false);
+        Bitmap icon0 = Bitmap.createScaledBitmap(bitmapDrawable0.getBitmap(), iconSize, iconSize, false);
+        Bitmap icon1 = Bitmap.createScaledBitmap(bitmapDrawable1.getBitmap(), iconSize, iconSize, false);
 
         for (Event event: events) {
-            map.addMarker(new MarkerOptions()
-                    .position(new LatLng(event.lat, event.lon))
-                    .icon(BitmapDescriptorFactory.fromBitmap(icon))).setTag(String.valueOf(event.id));
+            if (event.type == 1 && isShowHot || event.type == 2 && isShowCold || event.type == 3 && isShowCar || event.type == 4 && isShowFire) {
+                Bitmap icon = event.danger == 1 ? icon1 : icon0;
+                map.addMarker(new MarkerOptions()
+                        .position(new LatLng(event.lat, event.lon))
+                        .icon(BitmapDescriptorFactory.fromBitmap(icon))).setTag(String.valueOf(event.id));
+            }
         }
-    }
-
-    @Override
-    public boolean onMarkerClick(Marker marker) {
-        updateInfoMarker(marker);
-        if (info.getVisibility() == View.GONE) {
-            info.setVisibility(View.VISIBLE);
-        }
-        return false;
     }
 
     private Event getEventById(int id) {
@@ -136,17 +201,17 @@ public class MapsActivity extends AppCompatActivity
         textLon = findViewById(R.id.textLon);
 
         switch (event.type) {
-            case 0:
-                textType.setText("Слабый напор или отсутствие холодного водоснабжения");
-                break;
             case 1:
-                textType.setText("Слабый напор или отсутствие горячего водоснабжения");
+                textType.setText("Проблемы с горячим водоснабжением");
                 break;
             case 2:
-                textType.setText("ДТП с пострадавшими людьми");
+                textType.setText("Проблемы с холодным водоснабжением");
                 break;
             case 3:
-                textType.setText("Пожары");
+                textType.setText("ДТП");
+                break;
+            case 4:
+                textType.setText("Пожар");
                 break;
         }
 
@@ -159,45 +224,38 @@ public class MapsActivity extends AppCompatActivity
         textLon.setText(String.valueOf(event.lon));
     }
 
-    @Override
-    public void onMapClick(LatLng latLng) {
-        if (info != null) {
-            info.setVisibility(View.GONE);
-        }
-    }
-
-    WebCallback webCallback = new WebCallback() {
-        @Override
-        public void onSuccess(String body) {
-            try {
-                events.clear();
-                JSONArray array = new JSONArray(body);
-                for (int i = 0; i < array.length(); i++) {
-                    JSONObject data = array.getJSONObject(i);
-                    int id = data.getInt("id");
-                    int type = data.getJSONObject("category").getInt("id");
-                    String time = data.getString("datetime");
-                    String district = data.getJSONObject("area").getString("name");
-                    double lat = data.getDouble("latitude");
-                    double lon = data.getDouble("longitude");
-                    int address = data.getInt("eas_address");
-                    int building = data.getInt("eas_building");
-                    events.add(new Event(id, type, time, district, lat, lon, address, building));
-                }
-                showEventsOnMap();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void onFailing(String error) {
-            Log.d(TAG, error);
-        }
-    };
-
     /** Метод для тестирования взаимодействия с сервером. */
-    private void testWebClient() {
+    private void getEventsFromServer() {
+        WebCallback webCallback = new WebCallback() {
+            @Override
+            public void onSuccess(String body) {
+                try {
+                    events.clear();
+                    JSONArray array = new JSONArray(body);
+                    for (int i = 0; i < array.length(); i++) {
+                        JSONObject data = array.getJSONObject(i);
+                        int id = data.getInt("id");
+                        int type = data.getJSONObject("category").getInt("id");
+                        String time = data.getString("datetime");
+                        String district = data.getJSONObject("area").getString("name");
+                        double lat = data.getDouble("latitude");
+                        double lon = data.getDouble("longitude");
+                        int address = data.getInt("eas_address");
+                        int building = data.getInt("eas_building");
+                        events.add(new Event(id, type, time, district, lat, lon, address, building));
+                    }
+                    showEventsOnMap();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailing(String error) {
+                Log.d(TAG, error);
+            }
+        };
+
         WebClient webClient = new WebClient();
         webClient.getEvents(webCallback);
     }

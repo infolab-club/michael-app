@@ -9,6 +9,7 @@ public class Event {
     public double lon;
     public int idAddress;
     public int idBuilding;
+    public int danger = 0;
 
     public Event(int id, int type, String time, String district, double lat, double lon, int idAddress, int idBuilding) {
         this.id = id;
