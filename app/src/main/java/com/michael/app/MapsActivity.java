@@ -243,6 +243,7 @@ public class MapsActivity extends AppCompatActivity
                         int address = data.getInt("eas_address");
                         int building = data.getInt("eas_building");
                         events.add(new Event(id, type, time, district, lat, lon, address, building));
+                        // events.get(events.size() - 1).danger = (events.get(events.size() - 1).id % 3 == 0 ? 1 : 0);
                     }
                     showEventsOnMap();
                 } catch (JSONException e) {

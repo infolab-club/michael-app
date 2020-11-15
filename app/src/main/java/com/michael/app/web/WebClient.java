@@ -55,8 +55,8 @@ public class WebClient {
     public void getEvents(WebCallback webCallback) {
         Map<String, String> params = new HashMap<>();
         params.put("limit", "1000");
-        params.put("datetime_lte", "10.01.2019 18:00");
-        params.put("datetime_gte", "09.01.2019 00:00");
+        params.put("datetime_lte", "10.08.2020 18:00");
+        params.put("datetime_gte", "09.08.2020 00:00");
         //noinspection rawtypes
         serviceCall = apiService.getEvents((HashMap<String, String>) params);
         sentData(webCallback);
