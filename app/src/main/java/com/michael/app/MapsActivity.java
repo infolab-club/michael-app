@@ -1,10 +1,10 @@
 package com.michael.app;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Display;
 import android.view.View;
 import android.widget.TextView;
@@ -17,15 +17,21 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.michael.app.web.WebCallback;
+import com.michael.app.web.WebClient;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
-        GoogleMap.OnMapClickListener {
+public class MapsActivity extends AppCompatActivity
+        implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener {
+    public final static String TAG = "WEB_CLIENT";
     private GoogleMap map;
     private LatLng cityPosition = new LatLng(59.932821, 30.329003);
     private ArrayList<Event> events = new ArrayList<>();
@@ -48,6 +54,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 info.setVisibility(View.GONE);
             }
         });
+        testWebClient();
     }
 
     @Override
@@ -72,6 +79,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void showEventsOnMap() {
+        map.clear();
         /* Получение ширины и высоты экрана. */
         Display display = getWindowManager().getDefaultDisplay();
         Point size = new Point();
@@ -156,5 +164,41 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (info != null) {
             info.setVisibility(View.GONE);
         }
+    }
+
+    WebCallback webCallback = new WebCallback() {
+        @Override
+        public void onSuccess(String body) {
+            try {
+                events.clear();
+                JSONArray array = new JSONArray(body);
+                for (int i = 0; i < array.length(); i++) {
+                    JSONObject data = array.getJSONObject(i);
+                    int id = data.getInt("id");
+                    int type = data.getJSONObject("category").getInt("id");
+                    String time = data.getString("datetime");
+                    String district = data.getJSONObject("area").getString("name");
+                    double lat = data.getDouble("latitude");
+                    double lon = data.getDouble("longitude");
+                    int address = data.getInt("eas_address");
+                    int building = data.getInt("eas_building");
+                    events.add(new Event(id, type, time, district, lat, lon, address, building));
+                }
+                showEventsOnMap();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void onFailing(String error) {
+            Log.d(TAG, error);
+        }
+    };
+
+    /** Метод для тестирования взаимодействия с сервером. */
+    private void testWebClient() {
+        WebClient webClient = new WebClient();
+        webClient.getEvents(webCallback);
     }
 }
